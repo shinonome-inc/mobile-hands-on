@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -7,109 +10,381 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Introduction to Flutter',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const TwitterHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class TwitterHomePage extends StatefulWidget {
+  const TwitterHomePage({Key? key}) : super(key: key);
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<TwitterHomePage> createState() => _TwitterHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _TwitterHomePageState extends State<TwitterHomePage> {
+  String timeFormatter(int seconds) {
+    String timeText = '$seconds秒';
+    if (seconds >= 86400) {
+      timeText = '${seconds ~/ 86400}日';
+    } else if (seconds >= 3600) {
+      timeText = '${seconds ~/ 3600}時間';
+    } else if (seconds >= 60) {
+      timeText = '${seconds ~/ 60}分';
+    }
+    return timeText;
+  }
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  String countFormatter(int count) {
+    String countText = '';
+    if (count >= 10000) {
+      countText = '${(count / 10000).toStringAsFixed(1)}万';
+    } else if (count > 0) {
+      countText = count.toString();
+    }
+    return countText;
+  }
+
+  PreferredSizeWidget twitterAppBar({
+    required Color backgroundColor,
+    required String leftImageUrl,
+    required String centerImageUrl,
+    required String rightImageUrl,
+  }) {
+    return AppBar(
+      leading: Container(
+        padding: const EdgeInsets.all(12.0),
+        child: CircleAvatar(
+          radius: 8.0,
+          backgroundImage: NetworkImage(leftImageUrl),
+        ),
+      ),
+      title: SizedBox(
+        width: 44.0,
+        height: 44.0,
+        child: centerImageUrl.isEmpty
+            ? const SizedBox.shrink()
+            : Image.network(
+                centerImageUrl,
+                errorBuilder: (c, o, s) => const SizedBox.shrink(),
+              ),
+      ),
+      actions: <Widget>[
+        if (rightImageUrl.isNotEmpty) Image.network(rightImageUrl),
+      ],
+      backgroundColor: backgroundColor,
+      elevation: 0,
+      automaticallyImplyLeading: false,
+      centerTitle: true,
+    );
+  }
+
+  Widget tweetImage(Tweet tweet) {
+    return CircleAvatar(
+      radius: 20.0,
+      backgroundImage: NetworkImage(tweet.userIconUrl),
+    );
+  }
+
+  Widget tweetHeader(Tweet tweet) {
+    var rand = math.Random();
+    int seconds = rand.nextInt(300000);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        Flexible(
+          child: RichText(
+            text: TextSpan(
+              style: const TextStyle(
+                fontSize: 12.0,
+                color: Colors.black87,
+              ),
+              children: [
+                TextSpan(
+                  text: tweet.userName,
+                  style: const TextStyle(
+                    fontSize: 14.0,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const WidgetSpan(
+                  child: SizedBox(width: 8.0),
+                ),
+                TextSpan(
+                  text: '@${tweet.userId}',
+                ),
+                const TextSpan(
+                  text: '・',
+                  style: TextStyle(fontSize: 10.0),
+                ),
+                TextSpan(text: timeFormatter(seconds)),
+              ],
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const Icon(
+          Icons.keyboard_control,
+          size: 16.0,
+          color: Colors.grey,
+        ),
+      ], // <Widget>[]
+    ); // Row
+  }
+
+  Widget tweetBody(Tweet tweet) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8.0),
+      child: Text(
+        tweet.text,
+        style: const TextStyle(fontSize: 12.0),
+      ),
+    );
+  }
+
+  Widget tweetFooterItem(IconData iconData, int count) {
+    String countText = countFormatter(count);
+    return Expanded(
+      child: Row(
+        children: <Widget>[
+          Icon(
+            iconData,
+            color: Colors.black87,
+            size: 16.0,
+          ),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.only(left: 4.0),
+              child: Text(
+                countText,
+                style: const TextStyle(color: Colors.black87, fontSize: 12.0),
+              ),
+            ),
+          ),
+        ], // <Widget>[]
+      ), // Row
+    );
+  }
+
+  Widget tweetFooter(Tweet tweet) {
+    var rand = math.Random();
+    int replayCount = rand.nextInt(500);
+    int retweetCount = rand.nextInt(10000) + replayCount;
+    int likesCount = rand.nextInt(90000) + retweetCount;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        tweetFooterItem(
+          CupertinoIcons.chat_bubble,
+          replayCount,
+        ),
+        tweetFooterItem(
+          CupertinoIcons.arrow_2_squarepath,
+          retweetCount,
+        ),
+        tweetFooterItem(
+          CupertinoIcons.heart,
+          likesCount,
+        ),
+        tweetFooterItem(
+          CupertinoIcons.tray_arrow_up,
+          0,
+        ),
+      ], // <Widget>[]
+    ); // Row
+  }
+
+  Widget tweetItem({
+    required Widget tweetImage,
+    required Widget tweetHeader,
+    required Widget tweetBody,
+    required Widget tweetFooter,
+  }) {
+    return Column(
+      children: <Widget>[
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              tweetImage,
+              const SizedBox(width: 8.0),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    tweetHeader,
+                    tweetBody,
+                    tweetFooter,
+                  ], // <Widget>[]
+                ), // Column
+              ),
+            ], // <Widget>[]
+          ), // Row
+        ),
+        const Divider(),
+      ], // <Widget>[]
+    );
+  }
+
+  Widget twitterBody({
+    required Widget Function(BuildContext, int) itemBuilder,
+  }) {
+    return ListView.builder(
+      itemCount: Data.tweetList.length,
+      shrinkWrap: true,
+      itemBuilder: itemBuilder, // Column
+    );
+  }
+
+  Widget twitterButton() {
+    return FloatingActionButton(
+      onPressed: () {},
+      elevation: 0,
+      child: const Icon(CupertinoIcons.add),
+    );
+  }
+
+  Widget twitterBottomNavigationBar({
+    required Icon homeIcon,
+    required Icon searchIcon,
+    required Icon bellIcon,
+    required Icon mailIcon,
+  }) {
+    return BottomNavigationBar(
+      selectedItemColor: Colors.black87,
+      unselectedItemColor: Colors.black45,
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
+      iconSize: 28.0,
+      type: BottomNavigationBarType.fixed,
+      items: <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: homeIcon,
+          label: '',
+        ),
+        BottomNavigationBarItem(
+          icon: searchIcon,
+          label: '',
+        ),
+        BottomNavigationBarItem(
+          icon: bellIcon,
+          label: '',
+        ),
+        BottomNavigationBarItem(
+          icon: mailIcon,
+          label: '',
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+      // ------------------------------ appBar ------------------------------
+      // backgroundColor: Colors.white,
+      // leftImageUrl: Data.loginUser.iconUrl,  // この行は変更しなくてOK
+      // centerImageUrl: 'https://img.icons8.com/color/48/000000/twitter--v1.png',
+      // rightImageUrl: 'https://img.icons8.com/material-outlined/24/000000/sparkling.png',
+      appBar: twitterAppBar(
+        backgroundColor: Colors.blue,
+        leftImageUrl: Data.loginUser.iconUrl, // この行は変更しなくてOK
+        centerImageUrl: '',
+        rightImageUrl: '',
+      ), // appBar
+
+      // ------------------------------ body ------------------------------
+      // tweetImage: tweetImage(tweet),
+      // tweetHeader: tweetHeader(tweet),
+      // tweetBody: tweetBody(tweet),
+      // tweetFooter: tweetFooter(tweet),
+      body: twitterBody(
+        itemBuilder: (BuildContext context, int index) {
+          // ignore: unused_local_variable
+          Tweet tweet = Data.tweetList[index];
+          return tweetItem(
+            tweetImage: Container(),
+            tweetHeader: Container(),
+            tweetBody: Container(),
+            tweetFooter: Container(),
+          );
+        },
+      ), // body
+
+      // ----------------------- floatingActionButton -----------------------
+      // floatingActionButton: twitterButton(),
+      floatingActionButton: null,
+
+      // ----------------------- bottomNavigationBar -----------------------
+      bottomNavigationBar: twitterBottomNavigationBar(
+        // homeIcon: const Icon(CupertinoIcons.home),
+        // searchIcon: const Icon(CupertinoIcons.search),
+        // bellIcon: const Icon(CupertinoIcons.bell),
+        // mailIcon: const Icon(CupertinoIcons.mail),
+        homeIcon: const Icon(CupertinoIcons.rectangle),
+        searchIcon: const Icon(CupertinoIcons.rectangle),
+        bellIcon: const Icon(CupertinoIcons.rectangle),
+        mailIcon: const Icon(CupertinoIcons.rectangle),
+      ), // bottomNavigation
+    ); // Scaffold
   }
 }
+
+class User {
+  String iconUrl;
+  String name;
+  String id;
+
+  User({
+    required this.iconUrl,
+    required this.name,
+    required this.id,
+  });
+} // class User
+
+class Tweet {
+  String userIconUrl;
+  String userName;
+  String userId;
+  String text;
+  String postImage;
+
+  Tweet({
+    required this.userIconUrl,
+    required this.userName,
+    required this.userId,
+    required this.text,
+    required this.postImage,
+  });
+} // class Tweet
+
+class Data {
+  // ---------------------- ログインユーザーのデータ ---------------------
+  static User loginUser = User(
+    iconUrl: 'https://lohas.nicoseiga.jp/thumb/10871615i?1640475082',
+    name: 'name',
+    id: 'id',
+  ); // loginUser
+
+  // ------------------------- ツイートのデータ -------------------------
+  static List<Tweet> tweetList = [
+    Tweet(
+      userIconUrl: 'https://lohas.nicoseiga.jp/thumb/10871615i?1640475082',
+      userName: 'name',
+      userId: 'id',
+      text: 'ツイート本文',
+      postImage: '',
+    ),
+  ]; // tweetList
+} // class Data
