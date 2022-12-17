@@ -285,20 +285,21 @@ class TweetItem extends StatelessWidget {
   }
 }
 
-class TwitterHomePage extends StatefulWidget {
-  const TwitterHomePage({Key? key}) : super(key: key);
+class TwitterBottomNavigationBar extends StatelessWidget {
+  const TwitterBottomNavigationBar({
+    Key? key,
+    required this.homeIcon,
+    required this.searchIcon,
+    required this.bellIcon,
+    required this.mailIcon,
+  }) : super(key: key);
+  final Icon homeIcon;
+  final Icon searchIcon;
+  final Icon bellIcon;
+  final Icon mailIcon;
 
   @override
-  State<TwitterHomePage> createState() => _TwitterHomePageState();
-}
-
-class _TwitterHomePageState extends State<TwitterHomePage> {
-  Widget twitterBottomNavigationBar({
-    required Icon homeIcon,
-    required Icon searchIcon,
-    required Icon bellIcon,
-    required Icon mailIcon,
-  }) {
+  Widget build(BuildContext context) {
     return BottomNavigationBar(
       selectedItemColor: Colors.black87,
       unselectedItemColor: Colors.black45,
@@ -326,7 +327,16 @@ class _TwitterHomePageState extends State<TwitterHomePage> {
       ],
     );
   }
+}
 
+class TwitterHomePage extends StatefulWidget {
+  const TwitterHomePage({Key? key}) : super(key: key);
+
+  @override
+  State<TwitterHomePage> createState() => _TwitterHomePageState();
+}
+
+class _TwitterHomePageState extends State<TwitterHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -371,15 +381,15 @@ class _TwitterHomePageState extends State<TwitterHomePage> {
       ),
 
       // ----------------------- bottomNavigationBar -----------------------
-      bottomNavigationBar: twitterBottomNavigationBar(
+      bottomNavigationBar: const TwitterBottomNavigationBar(
         // homeIcon: const Icon(CupertinoIcons.home),
         // searchIcon: const Icon(CupertinoIcons.search),
         // bellIcon: const Icon(CupertinoIcons.bell),
         // mailIcon: const Icon(CupertinoIcons.mail),
-        homeIcon: const Icon(CupertinoIcons.home),
-        searchIcon: const Icon(CupertinoIcons.search),
-        bellIcon: const Icon(CupertinoIcons.bell),
-        mailIcon: const Icon(CupertinoIcons.mail),
+        homeIcon: Icon(CupertinoIcons.home),
+        searchIcon: Icon(CupertinoIcons.search),
+        bellIcon: Icon(CupertinoIcons.bell),
+        mailIcon: Icon(CupertinoIcons.mail),
       ), // bottomNavigation
     ); // Scaffold
   }
