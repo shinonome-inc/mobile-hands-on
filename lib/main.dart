@@ -23,6 +23,53 @@ class MyApp extends StatelessWidget {
   }
 }
 
+class TwitterAppBar extends StatelessWidget with PreferredSizeWidget {
+  const TwitterAppBar({
+    Key? key,
+    required this.backgroundColor,
+    required this.leftImageUrl,
+    required this.centerImageUrl,
+    required this.rightImageUrl,
+  }) : super(key: key);
+  final Color backgroundColor;
+  final String leftImageUrl;
+  final String centerImageUrl;
+  final String rightImageUrl;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      leading: Container(
+        padding: const EdgeInsets.all(12.0),
+        child: CircleAvatar(
+          radius: 8.0,
+          backgroundImage: NetworkImage(leftImageUrl),
+        ),
+      ),
+      title: SizedBox(
+        width: 44.0,
+        height: 44.0,
+        child: centerImageUrl.isEmpty
+            ? const SizedBox.shrink()
+            : Image.network(
+                centerImageUrl,
+                errorBuilder: (c, o, s) => const SizedBox.shrink(),
+              ),
+      ),
+      actions: <Widget>[
+        if (rightImageUrl.isNotEmpty) Image.network(rightImageUrl),
+      ],
+      backgroundColor: backgroundColor,
+      elevation: 0,
+      automaticallyImplyLeading: false,
+      centerTitle: true,
+    );
+  }
+}
+
 class TwitterHomePage extends StatefulWidget {
   const TwitterHomePage({Key? key}) : super(key: key);
 
@@ -51,40 +98,6 @@ class _TwitterHomePageState extends State<TwitterHomePage> {
       countText = count.toString();
     }
     return countText;
-  }
-
-  PreferredSizeWidget twitterAppBar({
-    required Color backgroundColor,
-    required String leftImageUrl,
-    required String centerImageUrl,
-    required String rightImageUrl,
-  }) {
-    return AppBar(
-      leading: Container(
-        padding: const EdgeInsets.all(12.0),
-        child: CircleAvatar(
-          radius: 8.0,
-          backgroundImage: NetworkImage(leftImageUrl),
-        ),
-      ),
-      title: SizedBox(
-        width: 44.0,
-        height: 44.0,
-        child: centerImageUrl.isEmpty
-            ? const SizedBox.shrink()
-            : Image.network(
-                centerImageUrl,
-                errorBuilder: (c, o, s) => const SizedBox.shrink(),
-              ),
-      ),
-      actions: <Widget>[
-        if (rightImageUrl.isNotEmpty) Image.network(rightImageUrl),
-      ],
-      backgroundColor: backgroundColor,
-      elevation: 0,
-      automaticallyImplyLeading: false,
-      centerTitle: true,
-    );
   }
 
   Widget tweetImage(Tweet tweet) {
@@ -289,7 +302,7 @@ class _TwitterHomePageState extends State<TwitterHomePage> {
       // leftImageUrl: Data.loginUser.iconUrl,  // この行は変更しなくてOK
       // centerImageUrl: 'https://img.icons8.com/color/48/000000/twitter--v1.png',
       // rightImageUrl: 'https://img.icons8.com/material-outlined/24/000000/sparkling.png',
-      appBar: twitterAppBar(
+      appBar: TwitterAppBar(
         backgroundColor: Colors.white,
         leftImageUrl: Data.loginUser.iconUrl, // この行は変更しなくてOK
         centerImageUrl:
