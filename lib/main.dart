@@ -70,14 +70,23 @@ class TwitterAppBar extends StatelessWidget with PreferredSizeWidget {
   }
 }
 
-class TwitterHomePage extends StatefulWidget {
-  const TwitterHomePage({Key? key}) : super(key: key);
+class TweetUserIcon extends StatelessWidget {
+  const TweetUserIcon({Key? key, required this.tweet}) : super(key: key);
+  final Tweet tweet;
 
   @override
-  State<TwitterHomePage> createState() => _TwitterHomePageState();
+  Widget build(BuildContext context) {
+    return CircleAvatar(
+      radius: 20.0,
+      backgroundImage: NetworkImage(tweet.userIconUrl),
+    );
+  }
 }
 
-class _TwitterHomePageState extends State<TwitterHomePage> {
+class TweetHeader extends StatelessWidget {
+  const TweetHeader({Key? key, required this.tweet}) : super(key: key);
+  final Tweet tweet;
+
   String timeFormatter(int seconds) {
     String timeText = '$seconds秒';
     if (seconds >= 86400) {
@@ -90,26 +99,10 @@ class _TwitterHomePageState extends State<TwitterHomePage> {
     return timeText;
   }
 
-  String countFormatter(int count) {
-    String countText = '';
-    if (count >= 10000) {
-      countText = '${(count / 10000).toStringAsFixed(1)}万';
-    } else if (count > 0) {
-      countText = count.toString();
-    }
-    return countText;
-  }
-
-  Widget tweetImage(Tweet tweet) {
-    return CircleAvatar(
-      radius: 20.0,
-      backgroundImage: NetworkImage(tweet.userIconUrl),
-    );
-  }
-
-  Widget tweetHeader(Tweet tweet) {
-    var rand = math.Random();
-    int seconds = rand.nextInt(300000);
+  @override
+  Widget build(BuildContext context) {
+    final rand = math.Random();
+    final seconds = rand.nextInt(300000);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
@@ -152,10 +145,16 @@ class _TwitterHomePageState extends State<TwitterHomePage> {
           color: Colors.grey,
         ),
       ], // <Widget>[]
-    ); // Row
+    );
   }
+}
 
-  Widget tweetBody(Tweet tweet) {
+class TweetBody extends StatelessWidget {
+  const TweetBody({Key? key, required this.tweet}) : super(key: key);
+  final Tweet tweet;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8.0),
       child: Text(
@@ -164,9 +163,29 @@ class _TwitterHomePageState extends State<TwitterHomePage> {
       ),
     );
   }
+}
 
-  Widget tweetFooterItem(IconData iconData, int count) {
-    String countText = countFormatter(count);
+class TweetFooterItem extends StatelessWidget {
+  const TweetFooterItem({
+    Key? key,
+    required this.iconData,
+    this.count,
+  }) : super(key: key);
+  final IconData? iconData;
+  final int? count;
+
+  String get countText {
+    if (count == null) {
+      return '';
+    } else if (count! >= 10000) {
+      return '${(count! / 10000).toStringAsFixed(1)}万';
+    } else {
+      return '$count';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Expanded(
       child: Row(
         children: <Widget>[
@@ -188,41 +207,56 @@ class _TwitterHomePageState extends State<TwitterHomePage> {
       ), // Row
     );
   }
+}
 
-  Widget tweetFooter(Tweet tweet) {
-    var rand = math.Random();
-    int replayCount = rand.nextInt(500);
-    int retweetCount = rand.nextInt(10000) + replayCount;
-    int likesCount = rand.nextInt(90000) + retweetCount;
+class TweetFooter extends StatelessWidget {
+  const TweetFooter({Key? key, required this.tweet}) : super(key: key);
+  final Tweet tweet;
+
+  @override
+  Widget build(BuildContext context) {
+    final rand = math.Random();
+    final int replayCount = rand.nextInt(500);
+    final int retweetCount = rand.nextInt(10000) + replayCount;
+    final int likesCount = rand.nextInt(90000) + retweetCount;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        tweetFooterItem(
-          CupertinoIcons.chat_bubble,
-          replayCount,
+        TweetFooterItem(
+          iconData: CupertinoIcons.chat_bubble,
+          count: replayCount,
         ),
-        tweetFooterItem(
-          CupertinoIcons.arrow_2_squarepath,
-          retweetCount,
+        TweetFooterItem(
+          iconData: CupertinoIcons.arrow_2_squarepath,
+          count: retweetCount,
         ),
-        tweetFooterItem(
-          CupertinoIcons.heart,
-          likesCount,
+        TweetFooterItem(
+          iconData: CupertinoIcons.heart,
+          count: likesCount,
         ),
-        tweetFooterItem(
-          CupertinoIcons.tray_arrow_up,
-          0,
+        const TweetFooterItem(
+          iconData: CupertinoIcons.tray_arrow_up,
         ),
       ], // <Widget>[]
-    ); // Row
+    );
   }
+}
 
-  Widget tweetItem({
-    required Widget tweetImage,
-    required Widget tweetHeader,
-    required Widget tweetBody,
-    required Widget tweetFooter,
-  }) {
+class TweetItem extends StatelessWidget {
+  const TweetItem({
+    Key? key,
+    required this.tweetImage,
+    required this.tweetHeader,
+    required this.tweetBody,
+    required this.tweetFooter,
+  }) : super(key: key);
+  final Widget tweetImage;
+  final Widget tweetHeader;
+  final Widget tweetBody;
+  final Widget tweetFooter;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
         Container(
@@ -249,17 +283,16 @@ class _TwitterHomePageState extends State<TwitterHomePage> {
       ], // <Widget>[]
     );
   }
+}
 
-  Widget twitterBody({
-    required Widget Function(BuildContext, int) itemBuilder,
-  }) {
-    return ListView.builder(
-      itemCount: Data.tweetList.length,
-      shrinkWrap: true,
-      itemBuilder: itemBuilder, // Column
-    );
-  }
+class TwitterHomePage extends StatefulWidget {
+  const TwitterHomePage({Key? key}) : super(key: key);
 
+  @override
+  State<TwitterHomePage> createState() => _TwitterHomePageState();
+}
+
+class _TwitterHomePageState extends State<TwitterHomePage> {
   Widget twitterBottomNavigationBar({
     required Icon homeIcon,
     required Icon searchIcon,
@@ -316,18 +349,19 @@ class _TwitterHomePageState extends State<TwitterHomePage> {
       // tweetHeader: tweetHeader(tweet),
       // tweetBody: tweetBody(tweet),
       // tweetFooter: tweetFooter(tweet),
-      body: twitterBody(
+      body: ListView.builder(
+        itemCount: Data.tweetList.length,
+        shrinkWrap: true,
         itemBuilder: (BuildContext context, int index) {
-          // ignore: unused_local_variable
-          Tweet tweet = Data.tweetList[index];
-          return tweetItem(
-            tweetImage: tweetImage(tweet),
-            tweetHeader: tweetHeader(tweet),
-            tweetBody: tweetBody(tweet),
-            tweetFooter: tweetFooter(tweet),
+          final Tweet tweet = Data.tweetList[index];
+          return TweetItem(
+            tweetImage: TweetUserIcon(tweet: tweet),
+            tweetHeader: TweetHeader(tweet: tweet),
+            tweetBody: TweetBody(tweet: tweet),
+            tweetFooter: TweetFooter(tweet: tweet),
           );
-        },
-      ), // body
+        }, // Column
+      ),
 
       // ----------------------- floatingActionButton -----------------------
       // child: const Icon(Icons.add),
