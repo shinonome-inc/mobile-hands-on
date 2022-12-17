@@ -247,14 +247,6 @@ class _TwitterHomePageState extends State<TwitterHomePage> {
     );
   }
 
-  Widget twitterButton() {
-    return FloatingActionButton(
-      onPressed: () {},
-      elevation: 0,
-      child: const Icon(CupertinoIcons.add),
-    );
-  }
-
   Widget twitterBottomNavigationBar({
     required Icon homeIcon,
     required Icon searchIcon,
@@ -325,8 +317,11 @@ class _TwitterHomePageState extends State<TwitterHomePage> {
       ), // body
 
       // ----------------------- floatingActionButton -----------------------
-      // floatingActionButton: twitterButton(),
-      floatingActionButton: twitterButton(),
+      // child: const Icon(Icons.add),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        child: const Icon(Icons.add),
+      ),
 
       // ----------------------- bottomNavigationBar -----------------------
       bottomNavigationBar: twitterBottomNavigationBar(
