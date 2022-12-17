@@ -337,17 +337,33 @@ class TwitterHomePage extends StatefulWidget {
 }
 
 class _TwitterHomePageState extends State<TwitterHomePage> {
+  final User _loginUser = User(
+    iconUrl: 'https://lohas.nicoseiga.jp/thumb/10871615i?1640475082',
+    name: 'name',
+    id: 'id',
+  );
+
+  final List<Tweet> _tweetList = [
+    Tweet(
+      userIconUrl: 'https://lohas.nicoseiga.jp/thumb/10871615i?1640475082',
+      userName: 'name',
+      userId: 'id',
+      text: 'ツイート本文',
+      postImage: '',
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       // ------------------------------ appBar ------------------------------
       // backgroundColor: Colors.white,
-      // leftImageUrl: Data.loginUser.iconUrl,  // この行は変更しなくてOK
+      // leftImageUrl: _loginUser.iconUrl, // この行は変更しなくてOK
       // centerImageUrl: 'https://img.icons8.com/color/48/000000/twitter--v1.png',
       // rightImageUrl: 'https://img.icons8.com/material-outlined/24/000000/sparkling.png',
       appBar: TwitterAppBar(
         backgroundColor: Colors.white,
-        leftImageUrl: Data.loginUser.iconUrl, // この行は変更しなくてOK
+        leftImageUrl: _loginUser.iconUrl, // この行は変更しなくてOK
         centerImageUrl:
             'https://img.icons8.com/color/48/000000/twitter--v1.png',
         rightImageUrl:
@@ -360,10 +376,10 @@ class _TwitterHomePageState extends State<TwitterHomePage> {
       // tweetBody: tweetBody(tweet),
       // tweetFooter: tweetFooter(tweet),
       body: ListView.builder(
-        itemCount: Data.tweetList.length,
+        itemCount: _tweetList.length,
         shrinkWrap: true,
         itemBuilder: (BuildContext context, int index) {
-          final Tweet tweet = Data.tweetList[index];
+          final Tweet tweet = _tweetList[index];
           return TweetItem(
             tweetImage: TweetUserIcon(tweet: tweet),
             tweetHeader: TweetHeader(tweet: tweet),
@@ -422,23 +438,3 @@ class Tweet {
     required this.postImage,
   });
 } // class Tweet
-
-class Data {
-  // ---------------------- ログインユーザーのデータ ---------------------
-  static User loginUser = User(
-    iconUrl: 'https://lohas.nicoseiga.jp/thumb/10871615i?1640475082',
-    name: 'name',
-    id: 'id',
-  ); // loginUser
-
-  // ------------------------- ツイートのデータ -------------------------
-  static List<Tweet> tweetList = [
-    Tweet(
-      userIconUrl: 'https://lohas.nicoseiga.jp/thumb/10871615i?1640475082',
-      userName: 'name',
-      userId: 'id',
-      text: 'ツイート本文',
-      postImage: '',
-    ),
-  ]; // tweetList
-} // class Data
